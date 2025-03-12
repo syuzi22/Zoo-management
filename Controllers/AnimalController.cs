@@ -6,7 +6,17 @@ using Microsoft.EntityFrameworkCore;
 using Zoo_management.DataTransferModels;
 using Zoo_management.enums;
 using NLog;
-using Zoo_management.Logger;
+
+public class Parameters
+{
+    public int PageNumber { get; set; } = 1;
+    public int PageSize { get; set; } = 10;
+    public string? Species { get; set; }
+    public Classification? Classification {get;set;}
+    public string? Name {get;set;}
+    public string? Age {get;set;}
+    public DateOnly? DateAcquired {get;set;}
+}
 
 [ApiController]
 [Route("[controller]")]
@@ -41,6 +51,27 @@ public class AnimalController : ControllerBase {
             .Include(animal => animal.Enclosure)
             .Include(animal => animal.ZooKeeper).ToListAsync(); 
     }
+
+    [HttpGet("GetPaginated")]
+    public async Task<List<Animal>> GetPaginated([FromQuery] Parameters parameters)
+    {
+        _logger.LogInformation("Inside GetPaginated");        
+
+        var animals = await _context.Animal
+            .Include(animal => animal.Enclosure)
+            .Include(animal => animal.ZooKeeper)
+            .Where(animal => parameters.Species == null || animal.Species == parameters.Species)
+            .Where(animal => parameters.Classification == null || animal.Classification == parameters.Classification)
+            .Where(animal => parameters.Age == null ||  (DateTime.Today.Year - animal.DateOfBirth.Year) == Int32.Parse(parameters.Age))
+            .Where(animal => parameters.Name == null || animal.Name == parameters.Name)
+            .Where(animal => parameters.DateAcquired == null || animal.DateAcquired == parameters.DateAcquired)
+            .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+            .Take(parameters.PageSize)
+            .ToListAsync();
+
+        return animals;
+    }
+
 
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] AddAnimal addAnimal)

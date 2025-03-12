@@ -7,8 +7,10 @@ namespace Zoo_management.Models;
 public class Animal {
     public int AnimalId {get; set;}
     public string Species {get; set;}
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public Classification Classification {get; set;} 
     public string Name {get; set;}
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public Sex Sex {get; set;} 
     public DateOnly DateOfBirth {get;set;}
     public DateOnly DateAcquired {get;set;}    
@@ -16,6 +18,7 @@ public class Animal {
     public Enclosure Enclosure {get;set;} 
     public int ZooKeeperId {get;set;}
     public ZooKeeper ZooKeeper {get;set;} 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public Status Status {get;set;}
 
     public Animal(string species, Classification classification, string name, Sex sex, DateOnly dateOfBirth, 
