@@ -1,26 +1,8 @@
 using System.ComponentModel.DataAnnotations.Schema;
-
+using System.Text.Json.Serialization;
+using Zoo_management.DataTransferModels;
+using Zoo_management.enums;
 namespace Zoo_management.Models;
-
-public enum Sex {
-    Male,
-    Female
-}
-
-public enum Classification {
-    Mammal,
-    Reptile,
-    Bird,
-    Insect,
-    Fish,
-    Invertebrate
-}
-
-public enum Status {
-    Active,
-    Transfered,
-    Dead
-}
 
 public class Animal {
     public int AnimalId {get; set;}
@@ -49,4 +31,16 @@ public class Animal {
         EnclosureId = enclosureId;
     }
     public Animal() {}
+
+    public Animal(AddAnimal addAnimal) {
+        Species = addAnimal.Species;
+        Classification = (Classification)Enum.Parse(typeof(Classification),addAnimal.Classification);
+        Name = addAnimal.Name;
+        Sex = (Sex)Enum.Parse(typeof(Sex),addAnimal.Sex);
+        DateOfBirth = addAnimal.DateOfBirth;
+        DateAcquired = addAnimal.DateAcquired;
+        Status = (Status)Enum.Parse(typeof(Status),addAnimal.Status);
+        ZooKeeperId = addAnimal.ZooKeeperId;
+        EnclosureId = addAnimal.EnclosureId;
+    }
 }

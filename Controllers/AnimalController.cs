@@ -3,6 +3,9 @@ using Zoo_management.Models;
 using Zoo_management.Database;
 namespace Zoo_management.Controllers;
 using Microsoft.EntityFrameworkCore;
+using Zoo_management.DataTransferModels;
+using Utility;
+using Zoo_management.enums;
 
 [ApiController]
 [Route("[controller]")]
@@ -26,19 +29,35 @@ public class AnimalController : ControllerBase {
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] Animal animal)
+    public async Task<IActionResult> Post([FromBody] AddAnimal addAnimal)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        Animal newAnimal = new Animal(animal.Species, animal.Classification, animal.Name,
-                 animal.Sex, animal.DateOfBirth, animal.DateAcquired, animal.Status, animal.ZooKeeperId, animal.EnclosureId);
-        _context.Animal.Add(newAnimal);
+        if(!Utility.InputValidations.ValidateClassification(addAnimal.Classification)) {
+             return BadRequest("Invalid Animal Classification. Allowed values are " + 
+                    String.Join(",", Enum.GetValues(typeof(Classification)).Cast<Classification>()));
+        }
+        if(!Utility.InputValidations.ValidateSex(addAnimal.Sex)) {
+             return BadRequest("Invalid Animal Sex. Allowed values are " + 
+                    String.Join(",", Enum.GetValues(typeof(Sex)).Cast<Sex>()));
+        }
+        if(!Utility.InputValidations.ValidateStatus(addAnimal.Status)) {
+             return BadRequest("Invalid Animal Status. Allowed values are " + 
+                    String.Join(",", Enum.GetValues(typeof(Status)).Cast<Status>()));
+        }
+        Animal animal = new Animal(addAnimal);
+        _context.Animal.Add(animal);
         int animalId = await _context.SaveChangesAsync();
-     
-        return CreatedAtAction("GetAnimalDetails", animalId);
+
+        animal = await _context.Animal
+            .Include(animal => animal.Enclosure)
+            .Include(animal => animal.ZooKeeper)
+            .FirstOrDefaultAsync(a => a.AnimalId == animalId);
+           
+        return CreatedAtRoute("GetAnimalDetails", new { id = animalId }, animal);
     }
 }
     
