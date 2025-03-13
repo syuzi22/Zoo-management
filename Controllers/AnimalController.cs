@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Zoo_management.DataTransferModels;
 using Zoo_management.enums;
 using NLog;
+using System.Reflection;
 
 public class Parameters
 {
@@ -16,11 +17,13 @@ public class Parameters
     public string? Name {get;set;}
     public string? Age {get;set;}
     public DateOnly? DateAcquired {get;set;}
+    public string? OrderBy {get;set;}
 }
 
 [ApiController]
 [Route("[controller]")]
-public class AnimalController : ControllerBase {
+public class 
+AnimalController : ControllerBase {
 
     private readonly ZooManagementContext _context;
     
@@ -55,9 +58,9 @@ public class AnimalController : ControllerBase {
     [HttpGet("GetPaginated")]
     public async Task<List<Animal>> GetPaginated([FromQuery] Parameters parameters)
     {
-        _logger.LogInformation("Inside GetPaginated");        
+        _logger.LogInformation("Inside GetPaginated");  
 
-        var animals = await _context.Animal
+        var animalsQuery = _context.Animal
             .Include(animal => animal.Enclosure)
             .Include(animal => animal.ZooKeeper)
             .Where(animal => parameters.Species == null || animal.Species == parameters.Species)
@@ -66,10 +69,32 @@ public class AnimalController : ControllerBase {
             .Where(animal => parameters.Name == null || animal.Name == parameters.Name)
             .Where(animal => parameters.DateAcquired == null || animal.DateAcquired == parameters.DateAcquired)
             .Skip((parameters.PageNumber - 1) * parameters.PageSize)
-            .Take(parameters.PageSize)
-            .ToListAsync();
+            .Take(parameters.PageSize);
+            // .OrderBy(animal => typeof(Animal).GetField(parameters.OrderBy))
+            // .ToListAsync();
 
-        return animals;
+            if(!String.IsNullOrEmpty(parameters.OrderBy)) {
+                if(parameters.OrderBy.Equals("Age")) {
+                    return await animalsQuery.OrderBy(animal => animal.DateOfBirth).ToListAsync();
+                }
+                if(parameters.OrderBy.Equals("Name")) {
+                    return await animalsQuery.OrderBy(animal => animal.Name).ToListAsync();
+                }
+                if(parameters.OrderBy.Equals("Sex")) {
+                    return await animalsQuery.OrderBy(animal => animal.Sex).ToListAsync();
+                }
+                if(parameters.OrderBy.Equals("Classification")) {
+                    return await animalsQuery.OrderBy(animal => animal.Classification).ToListAsync();
+                }
+                if(parameters.OrderBy.Equals("DateAcquired")) {
+                    return await animalsQuery.OrderBy(animal => animal.DateAcquired).ToListAsync();
+                }
+                if(parameters.OrderBy.Equals("Status")) {
+                    return await animalsQuery.OrderBy(animal => animal.Status).ToListAsync();
+                }
+            }
+           
+        return await animalsQuery.OrderBy(animal => animal.Species).ToListAsync();
     }
 
 

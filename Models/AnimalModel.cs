@@ -5,6 +5,7 @@ using Zoo_management.enums;
 namespace Zoo_management.Models;
 
 public class Animal {
+
     public int AnimalId {get; set;}
     public string Species {get; set;}
     [JsonConverter(typeof(JsonStringEnumConverter))]
