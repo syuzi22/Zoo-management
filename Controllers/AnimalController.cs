@@ -70,8 +70,6 @@ AnimalController : ControllerBase {
             .Where(animal => parameters.DateAcquired == null || animal.DateAcquired == parameters.DateAcquired)
             .Skip((parameters.PageNumber - 1) * parameters.PageSize)
             .Take(parameters.PageSize);
-            // .OrderBy(animal => typeof(Animal).GetField(parameters.OrderBy))
-            // .ToListAsync();
 
             if(!String.IsNullOrEmpty(parameters.OrderBy)) {
                 if(parameters.OrderBy.Equals("Age")) {
