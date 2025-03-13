@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-
 namespace Zoo_management.Controllers;
 
 [ApiController]
